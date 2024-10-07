@@ -1,0 +1,12 @@
+{
+	"environments": {
+		"development": {
+			"@mozz:dotenv": ".env.local",
+			"@mozz:config_file": "./app.toml"
+		},
+		"production": {
+			"@mozz:dotenv": ".env",
+			"@mozz:config_file": "./app.toml"
+		}
+	}
+}
