@@ -31,17 +31,14 @@ const fs_1 = __importDefault(require("fs"));
 const Oceanic = __importStar(require("oceanic.js"));
 const createInteraction_js_1 = require("../models/createInteraction.js");
 const createCommand_js_1 = require("../models/createCommand.js");
-
 class CommandManager {
     commands = [];
     interactions = [];
     internalCacheAutocomplete = new Map();
     client;
-
     constructor(client) {
         this.client = client;
     }
-
     loadInteraction(imports) {
         for (const i of Object.values(imports)) {
             if (i instanceof createInteraction_js_1.InternalInteraction) {
@@ -49,26 +46,22 @@ class CommandManager {
             }
         }
     }
-
     async loadArgumentsFromCommands(commands, baseName = '') {
         for (const anyCommand of commands) {
-            if (anyCommand.type == 'command') {
-                for (const arg of Object.values(anyCommand.args)) {
+            if (anyCommand.type === 'command') {
+                for (const arg of Object.values(anyCommand.args || {})) { // Adicionada verificação para evitar null/undefined
                     if (!arg.autocomplete) continue;
                     this.internalCacheAutocomplete.set(`${baseName ? `${baseName} ${anyCommand.name}` : anyCommand.name} ${arg.name}`, arg.autocomplete);
                 }
             } else {
-                await this.loadArgumentsFromCommands(anyCommand.commands, `${baseName} ${anyCommand.name}`);
+                await this.loadArgumentsFromCommands(anyCommand.commands || [], `${baseName} ${anyCommand.name}`); // Adicionada verificação
             }
         }
     }
-
     async loadCommand(dir, internal_group) {
         let group = internal_group;
         const readdir = fs_1.default.readdirSync(dir);
         const index = readdir.find((i) => i.startsWith('index'));
-        
-        // Verificar se há um arquivo index e importá-lo
         if (index) {
             readdir.splice(readdir.indexOf(index), 1);
             group = (await Promise.resolve(`${`${dir}/index.js`}`).then(s => __importStar(require(s)))).default;
@@ -78,8 +71,6 @@ class CommandManager {
                 internal_group.commands.push(group);
             }
         }
-
-        // Iterar sobre os arquivos e diretórios
         for (const file of readdir) {
             const stats = fs_1.default.statSync(`${dir}/${file}`);
             if (stats.isDirectory()) {
@@ -87,33 +78,28 @@ class CommandManager {
             } else {
                 const imports = await Promise.resolve(`${`${dir}/${file}`}`).then(s => __importStar(require(s)));
                 const command = imports.default;
-                
-                // Adicionar o comando à lista de comandos
                 if (group) {
                     group.commands.push(command);
                 } else {
                     this.commands.push(command);
                 }
-
                 this.loadInteraction(imports);
             }
         }
     }
-
     getCommand(name) {
-        let command = this.commands.find((i) => i.name == name[0]);
-        while (command?.type == 'group') {
+        let command = this.commands.find((i) => i.name === name[0]);
+        while (command?.type === 'group') {
             name.shift();
-            command = command.commands.find((i) => i.name == name[0]);
+            command = command.commands.find((i) => i.name === name[0]);
         }
         return command;
     }
-
     createCommandArgs(values, command, interaction) {
         const data = {};
         for (const value of values) {
             const key = String(Object.entries(command.args).find((data) => {
-                return data[1].name == value.name;
+                return data[1].name === value.name;
             })?.[0]);
             switch (value.type) {
                 case Oceanic.ApplicationCommandOptionTypes.USER: {
@@ -126,19 +112,15 @@ class CommandManager {
         }
         return data;
     }
-
     async runInteraction(data) {
         const args = data.data.custom_id.split(';');
-        const interaction = this.interactions.find((i) => i.name == args[0]);
+        const interaction = this.interactions.find((i) => i.name === args[0]);
         if (!interaction) return;
         const component = new Oceanic.ComponentInteraction(data, this.client);
-        if (component.data.componentType == 2) {
-            interaction.run(new createInteraction_js_1.InteractionContext(component));
-        } else if (component.data.componentType == 3) {
+        if (component.data.componentType === 2 || component.data.componentType === 3) {
             interaction.run(new createInteraction_js_1.InteractionContext(component));
         }
     }
-
     async runCommand(data, reply) {
         const i = new Oceanic.CommandInteraction(data, this.client);
         const content = [i.data.name].concat(i.data.options.getSubCommand() || []);
@@ -149,15 +131,13 @@ class CommandManager {
         ctx.args = this.createCommandArgs(values, command, i);
         command.run(ctx);
     }
-
     async runModalSubmit(data) {
         const i = new Oceanic.ModalSubmitInteraction(data, this.client);
         const args = data.data.custom_id.split(';');
-        const interaction = this.interactions.find((i) => i.name == args[0]);
+        const interaction = this.interactions.find((i) => i.name === args[0]);
         if (!interaction) return;
         interaction.run(new createInteraction_js_1.InteractionContext(i));
     }
-
     async runAutoComplete(data) {
         const i = new Oceanic.AutocompleteInteraction(data, this.client);
         const focused = [i.data.name]
@@ -167,5 +147,4 @@ class CommandManager {
         if (autocomplete) autocomplete(i);
     }
 }
-
 exports.CommandManager = CommandManager;
