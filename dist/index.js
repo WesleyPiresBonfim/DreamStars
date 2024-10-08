@@ -27,7 +27,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Oceanic = __importStar(require("oceanic.js"));
-const Client_js_1 = require("./structure/Client.js");
+const Client_js_1 = require("./bot/structure/Client");
 
 const client = new Client_js_1.Client({
     token: process.env.TOKEN,
