@@ -31,13 +31,16 @@ const path_1 = __importDefault(require("path"));
 const Oceanic = __importStar(require("oceanic.js"));
 const CommandManager_js_1 = require("../managers/CommandManager.js");
 const env_js_1 = require("../../env.js");
+
 class Client extends Oceanic.Client {
     command = new CommandManager_js_1.CommandManager(this);
+
     constructor() {
         super({
             auth: `Bot ${env_js_1.enhancer.env.TOKEN}`,
         });
     }
+
     mappingSlash(commands, subcommand) {
         const command = commands.map((i) => {
             return {
@@ -47,9 +50,7 @@ class Client extends Oceanic.Client {
                     ? Object.values(i.args).map((i) => {
                         return {
                             ...i,
-                            autocomplete: i.autocomplete
-                                ? true
-                                : undefined,
+                            autocomplete: i.autocomplete ? true : undefined,
                         };
                     })
                     : this.mappingSlash(i.commands, true),
@@ -57,12 +58,15 @@ class Client extends Oceanic.Client {
         });
         return command;
     }
+
     bulkEditGlobalCommands() {
         return this.application.bulkEditGlobalCommands(this.mappingSlash(this.command.commands));
     }
+
     bulkEditGuildCommands(guild) {
         return this.application.bulkEditGuildCommands(guild, this.mappingSlash(this.command.commands));
     }
+
     async load() {
         await this.command.loadCommand(path_1.default.resolve(__dirname, '../', 'commands'));
         await this.command.loadArgumentsFromCommands(this.command.commands);
@@ -70,5 +74,12 @@ class Client extends Oceanic.Client {
         return this;
     }
 }
+
+// Adicionando o método para registrar o comando "finalizar"
+Client.prototype.registerCommand = function(command) {
+    this.command.commands.push(command); // Adiciona o comando ao gerenciador de comandos
+    console.log(`Comando registrado: ${command.name}`); // Log para confirmar registro
+};
+
 exports.Client = Client;
 exports.bot = new Client();
