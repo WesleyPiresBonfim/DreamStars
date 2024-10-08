@@ -59,3 +59,29 @@ exports.default = (0, createCommand_1.createCommand)({
         });
     },
 });
+
+exports.ranking = (0, createCommand_1.createCommand)({
+    name: 'ranking',
+    description: 'Mostra o ranking dos jogadores.',
+    type: 'command',
+    run: async (ctx) => {
+        const rankingData = require("../../../data/ranking.json");
+        const rankingEmbed = new Embed_1.Embed()
+            .setTitle("Ranking dos Jogadores")
+            .setColorHex("#00ff00");
+
+        if (rankingData.length === 0) {
+            rankingEmbed.setDescription("Nenhum jogador no ranking.");
+        } else {
+            rankingData.sort((a, b) => b.points - a.points);
+            const rankingList = rankingData.map((player, index) => {
+                return `${index + 1}. ${player.name} - ${player.points} pontos`;
+            }).join("\n");
+            rankingEmbed.setDescription(rankingList);
+        }
+
+        ctx.data.reply({
+            embeds: [rankingEmbed],
+        });
+    },
+});
