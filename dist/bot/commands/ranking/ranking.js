@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const oceanic_js_1 = require("oceanic.js");
-const createCommand_1 = require("../../../models/createCommand");
+const createCommand_1 = require("../../models/createCommand");
 const fs = require("fs");
 const path = require("path");
 
-const rankingFilePath = path.join(__dirname, "../../../../ranking.json");
+const rankingFilePath = path.join(__dirname, "../../../ranking.json");
 
 // Função para carregar o ranking
 const loadRanking = () => {
