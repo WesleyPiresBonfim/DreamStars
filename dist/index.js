@@ -1,36 +1,45 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+        desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const Logging_1 = require("./modules/Logging");
-const server_1 = require("./http/server");
-const env_1 = require("./env");
-const Client_1 = require("./bot/structure/Client");
+const Oceanic = __importStar(require("oceanic.js"));
+const Client_js_1 = require("./structure/Client.js");
 
-// Importar os novos comandos
-const finalizarCommand = require("./bot/commands/ranking/finalizar.js");
-const rankingCommand = require("./bot/commands/ranking/ranking.js");
+const client = new Client_js_1.Client({
+    token: process.env.TOKEN,
+    intents: ["GUILDS", "GUILD_MESSAGES"],
+});
 
-(async () => {
-    if (env_1.enhancer.env.NAME != 'production')
-        (0, Logging_1.warn)(`Environment: ${env_1.enhancer.env.NAME.magenta}`, [
-            'app:environment'.blue,
-        ]);
-    
-    Client_1.bot.load();
+// Aqui é onde você deve chamar o método load do cliente
+client.load = async () => {
+    // Lógica de carregamento, se necessário
+    console.log("Bot carregado com sucesso!");
+};
 
-    // Registrar os novos comandos
-    Client_1.bot.registerCommand(finalizarCommand);
-    Client_1.bot.registerCommand(rankingCommand);
-
-    Client_1.bot.on('ready', () => {
-        (0, Logging_1.log)('Bot is now ' + 'Ready'.magenta + '!', [
-            'bot:gatewayConnection'.blue,
-        ]);
-        if (env_1.enhancer.env.NAME == 'production') {
-            Client_1.bot.bulkEditGlobalCommands();
-        }
-    });
-    
-    server_1.app.listen({ host: '0.0.0.0', port: env_1.enhancer.env.PORT }).then((i) => {
-        (0, Logging_1.log)('Server is running', ['fastify:server'.green]);
-    });
-})();
+client.connect().then(() => {
+    console.log("Bot conectado!");
+}).catch(console.error);
