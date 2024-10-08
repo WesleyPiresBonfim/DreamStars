@@ -3,7 +3,7 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
     if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-        desc = { enumerable: true, get: function() { return m[k]; } };
+      desc = { enumerable: true, get: function() { return m[k]; } };
     }
     Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
@@ -48,13 +48,17 @@ class CommandManager {
     }
     async loadArgumentsFromCommands(commands, baseName = '') {
         for (const anyCommand of commands) {
-            if (anyCommand.type === 'command') {
-                for (const arg of Object.values(anyCommand.args || {})) { // Adicionada verificação para evitar null/undefined
-                    if (!arg.autocomplete) continue;
-                    this.internalCacheAutocomplete.set(`${baseName ? `${baseName} ${anyCommand.name}` : anyCommand.name} ${arg.name}`, arg.autocomplete);
+            if (anyCommand.type == 'command') {
+                if (!anyCommand.args) continue; // Adicionada a verificação aqui
+                for (const arg of Object.values(anyCommand.args)) {
+                    if (!arg.autocomplete)
+                        continue;
+                    this.internalCacheAutocomplete.set(`${baseName
+                        ? `${baseName} ${anyCommand.name}`
+                        : anyCommand.name} ${arg.name}`, arg.autocomplete);
                 }
             } else {
-                await this.loadArgumentsFromCommands(anyCommand.commands || [], `${baseName} ${anyCommand.name}`); // Adicionada verificação
+                await this.loadArgumentsFromCommands(anyCommand.commands, `${baseName} ${anyCommand.name}`);
             }
         }
     }
@@ -88,10 +92,10 @@ class CommandManager {
         }
     }
     getCommand(name) {
-        let command = this.commands.find((i) => i.name === name[0]);
-        while (command?.type === 'group') {
+        let command = this.commands.find((i) => i.name == name[0]);
+        while (command?.type == 'group') {
             name.shift();
-            command = command.commands.find((i) => i.name === name[0]);
+            command = command.commands.find((i) => i.name == name[0]);
         }
         return command;
     }
@@ -99,7 +103,7 @@ class CommandManager {
         const data = {};
         for (const value of values) {
             const key = String(Object.entries(command.args).find((data) => {
-                return data[1].name === value.name;
+                return data[1].name == value.name;
             })?.[0]);
             switch (value.type) {
                 case Oceanic.ApplicationCommandOptionTypes.USER: {
@@ -114,10 +118,12 @@ class CommandManager {
     }
     async runInteraction(data) {
         const args = data.data.custom_id.split(';');
-        const interaction = this.interactions.find((i) => i.name === args[0]);
+        const interaction = this.interactions.find((i) => i.name == args[0]);
         if (!interaction) return;
         const component = new Oceanic.ComponentInteraction(data, this.client);
-        if (component.data.componentType === 2 || component.data.componentType === 3) {
+        if (component.data.componentType == 2) {
+            interaction.run(new createInteraction_js_1.InteractionContext(component));
+        } else if (component.data.componentType == 3) {
             interaction.run(new createInteraction_js_1.InteractionContext(component));
         }
     }
@@ -134,7 +140,7 @@ class CommandManager {
     async runModalSubmit(data) {
         const i = new Oceanic.ModalSubmitInteraction(data, this.client);
         const args = data.data.custom_id.split(';');
-        const interaction = this.interactions.find((i) => i.name === args[0]);
+        const interaction = this.interactions.find((i) => i.name == args[0]);
         if (!interaction) return;
         interaction.run(new createInteraction_js_1.InteractionContext(i));
     }
