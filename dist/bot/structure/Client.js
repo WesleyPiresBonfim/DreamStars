@@ -77,8 +77,12 @@ class Client extends Oceanic.Client {
 
 // Adicionando o método para registrar o comando "finalizar"
 Client.prototype.registerCommand = function(command) {
-    this.command.commands.push(command); // Adiciona o comando ao gerenciador de comandos
-    console.log(`Comando registrado: ${command.name}`); // Log para confirmar registro
+    if (command && command.name) { // Verificação se o comando é válido
+        this.command.commands.push(command); // Adiciona o comando ao gerenciador de comandos
+        console.log(`Comando registrado: ${command.name}`); // Log para confirmar registro
+    } else {
+        console.error("Falha ao registrar comando: Comando inválido"); // Log de erro
+    }
 };
 
 exports.Client = Client;
