@@ -3,7 +3,7 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
     if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
+        desc = { enumerable: true, get: function() { return m[k]; } };
     }
     Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
@@ -31,14 +31,17 @@ const fs_1 = __importDefault(require("fs"));
 const Oceanic = __importStar(require("oceanic.js"));
 const createInteraction_js_1 = require("../models/createInteraction.js");
 const createCommand_js_1 = require("../models/createCommand.js");
+
 class CommandManager {
     commands = [];
     interactions = [];
     internalCacheAutocomplete = new Map();
     client;
+
     constructor(client) {
         this.client = client;
     }
+
     loadInteraction(imports) {
         for (const i of Object.values(imports)) {
             if (i instanceof createInteraction_js_1.InternalInteraction) {
@@ -46,53 +49,57 @@ class CommandManager {
             }
         }
     }
+
     async loadArgumentsFromCommands(commands, baseName = '') {
         for (const anyCommand of commands) {
             if (anyCommand.type == 'command') {
                 for (const arg of Object.values(anyCommand.args)) {
-                    if (!arg.autocomplete)
-                        continue;
-                    this.internalCacheAutocomplete.set(`${baseName
-                        ? `${baseName} ${anyCommand.name}`
-                        : anyCommand.name} ${arg.name}`, arg.autocomplete);
+                    if (!arg.autocomplete) continue;
+                    this.internalCacheAutocomplete.set(`${baseName ? `${baseName} ${anyCommand.name}` : anyCommand.name} ${arg.name}`, arg.autocomplete);
                 }
+            } else {
+                await this.loadArgumentsFromCommands(anyCommand.commands, `${baseName} ${anyCommand.name}`);
             }
-            else
-                this.loadArgumentsFromCommands(anyCommand.commands, `${baseName} ${anyCommand.name}`);
         }
     }
+
     async loadCommand(dir, internal_group) {
         let group = internal_group;
         const readdir = fs_1.default.readdirSync(dir);
         const index = readdir.find((i) => i.startsWith('index'));
+        
+        // Verificar se há um arquivo index e importá-lo
         if (index) {
             readdir.splice(readdir.indexOf(index), 1);
             group = (await Promise.resolve(`${`${dir}/index.js`}`).then(s => __importStar(require(s)))).default;
             if (!internal_group) {
                 this.commands.push(group);
-            }
-            else {
+            } else {
                 internal_group.commands.push(group);
             }
         }
+
+        // Iterar sobre os arquivos e diretórios
         for (const file of readdir) {
             const stats = fs_1.default.statSync(`${dir}/${file}`);
             if (stats.isDirectory()) {
                 await this.loadCommand(`${dir}/${file}`, group);
-            }
-            else {
+            } else {
                 const imports = await Promise.resolve(`${`${dir}/${file}`}`).then(s => __importStar(require(s)));
                 const command = imports.default;
+                
+                // Adicionar o comando à lista de comandos
                 if (group) {
                     group.commands.push(command);
-                }
-                else {
+                } else {
                     this.commands.push(command);
                 }
+
                 this.loadInteraction(imports);
             }
         }
     }
+
     getCommand(name) {
         let command = this.commands.find((i) => i.name == name[0]);
         while (command?.type == 'group') {
@@ -101,6 +108,7 @@ class CommandManager {
         }
         return command;
     }
+
     createCommandArgs(values, command, interaction) {
         const data = {};
         for (const value of values) {
@@ -109,58 +117,55 @@ class CommandManager {
             })?.[0]);
             switch (value.type) {
                 case Oceanic.ApplicationCommandOptionTypes.USER: {
-                    ;
-                    data[key] =
-                        interaction.data.resolved.users.get(value.value);
+                    data[key] = interaction.data.resolved.users.get(value.value);
                     break;
                 }
                 default:
-                    ;
                     data[key] = value.value;
             }
         }
         return data;
     }
+
     async runInteraction(data) {
         const args = data.data.custom_id.split(';');
         const interaction = this.interactions.find((i) => i.name == args[0]);
-        if (!interaction)
-            return;
+        if (!interaction) return;
         const component = new Oceanic.ComponentInteraction(data, this.client);
         if (component.data.componentType == 2) {
             interaction.run(new createInteraction_js_1.InteractionContext(component));
-        }
-        else if (component.data.componentType == 3) {
+        } else if (component.data.componentType == 3) {
             interaction.run(new createInteraction_js_1.InteractionContext(component));
         }
     }
+
     async runCommand(data, reply) {
         const i = new Oceanic.CommandInteraction(data, this.client);
         const content = [i.data.name].concat(i.data.options.getSubCommand() || []);
         const command = this.getCommand(content);
-        if (!command)
-            return;
+        if (!command) return;
         const ctx = new createCommand_js_1.CommandContext(i);
         const values = i.data.options.getOptions();
         ctx.args = this.createCommandArgs(values, command, i);
         command.run(ctx);
     }
+
     async runModalSubmit(data) {
         const i = new Oceanic.ModalSubmitInteraction(data, this.client);
         const args = data.data.custom_id.split(';');
         const interaction = this.interactions.find((i) => i.name == args[0]);
-        if (!interaction)
-            return;
+        if (!interaction) return;
         interaction.run(new createInteraction_js_1.InteractionContext(i));
     }
+
     async runAutoComplete(data) {
         const i = new Oceanic.AutocompleteInteraction(data, this.client);
         const focused = [i.data.name]
             .concat(i.data.options.getSubCommand() || [], i.data.options.getFocused()?.name || [])
             .join(' ');
         const autocomplete = this.internalCacheAutocomplete.get(focused);
-        if (autocomplete)
-            autocomplete(i);
+        if (autocomplete) autocomplete(i);
     }
 }
+
 exports.CommandManager = CommandManager;
