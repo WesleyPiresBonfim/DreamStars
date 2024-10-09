@@ -49,7 +49,6 @@ class CommandManager {
     async loadArgumentsFromCommands(commands, baseName = '') {
         for (const anyCommand of commands) {
             if (anyCommand.type == 'command') {
-                if (!anyCommand.args) continue; // Adicionada a verificação aqui
                 for (const arg of Object.values(anyCommand.args)) {
                     if (!arg.autocomplete)
                         continue;
@@ -57,9 +56,9 @@ class CommandManager {
                         ? `${baseName} ${anyCommand.name}`
                         : anyCommand.name} ${arg.name}`, arg.autocomplete);
                 }
-            } else {
-                await this.loadArgumentsFromCommands(anyCommand.commands, `${baseName} ${anyCommand.name}`);
             }
+            else
+                this.loadArgumentsFromCommands(anyCommand.commands, `${baseName} ${anyCommand.name}`);
         }
     }
     async loadCommand(dir, internal_group) {
@@ -71,7 +70,8 @@ class CommandManager {
             group = (await Promise.resolve(`${`${dir}/index.js`}`).then(s => __importStar(require(s)))).default;
             if (!internal_group) {
                 this.commands.push(group);
-            } else {
+            }
+            else {
                 internal_group.commands.push(group);
             }
         }
@@ -79,12 +79,14 @@ class CommandManager {
             const stats = fs_1.default.statSync(`${dir}/${file}`);
             if (stats.isDirectory()) {
                 await this.loadCommand(`${dir}/${file}`, group);
-            } else {
+            }
+            else {
                 const imports = await Promise.resolve(`${`${dir}/${file}`}`).then(s => __importStar(require(s)));
                 const command = imports.default;
                 if (group) {
                     group.commands.push(command);
-                } else {
+                }
+                else {
                     this.commands.push(command);
                 }
                 this.loadInteraction(imports);
@@ -107,10 +109,13 @@ class CommandManager {
             })?.[0]);
             switch (value.type) {
                 case Oceanic.ApplicationCommandOptionTypes.USER: {
-                    data[key] = interaction.data.resolved.users.get(value.value);
+                    ;
+                    data[key] =
+                        interaction.data.resolved.users.get(value.value);
                     break;
                 }
                 default:
+                    ;
                     data[key] = value.value;
             }
         }
@@ -119,11 +124,13 @@ class CommandManager {
     async runInteraction(data) {
         const args = data.data.custom_id.split(';');
         const interaction = this.interactions.find((i) => i.name == args[0]);
-        if (!interaction) return;
+        if (!interaction)
+            return;
         const component = new Oceanic.ComponentInteraction(data, this.client);
         if (component.data.componentType == 2) {
             interaction.run(new createInteraction_js_1.InteractionContext(component));
-        } else if (component.data.componentType == 3) {
+        }
+        else if (component.data.componentType == 3) {
             interaction.run(new createInteraction_js_1.InteractionContext(component));
         }
     }
@@ -131,7 +138,8 @@ class CommandManager {
         const i = new Oceanic.CommandInteraction(data, this.client);
         const content = [i.data.name].concat(i.data.options.getSubCommand() || []);
         const command = this.getCommand(content);
-        if (!command) return;
+        if (!command)
+            return;
         const ctx = new createCommand_js_1.CommandContext(i);
         const values = i.data.options.getOptions();
         ctx.args = this.createCommandArgs(values, command, i);
@@ -141,7 +149,8 @@ class CommandManager {
         const i = new Oceanic.ModalSubmitInteraction(data, this.client);
         const args = data.data.custom_id.split(';');
         const interaction = this.interactions.find((i) => i.name == args[0]);
-        if (!interaction) return;
+        if (!interaction)
+            return;
         interaction.run(new createInteraction_js_1.InteractionContext(i));
     }
     async runAutoComplete(data) {
@@ -150,7 +159,8 @@ class CommandManager {
             .concat(i.data.options.getSubCommand() || [], i.data.options.getFocused()?.name || [])
             .join(' ');
         const autocomplete = this.internalCacheAutocomplete.get(focused);
-        if (autocomplete) autocomplete(i);
+        if (autocomplete)
+            autocomplete(i);
     }
 }
 exports.CommandManager = CommandManager;

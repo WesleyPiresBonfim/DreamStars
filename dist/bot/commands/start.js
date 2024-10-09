@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.interaction_sort = exports.interaction_leave = exports.interaction_play = exports.interaction_ranking = void 0;
+exports.interaction_sort = exports.interaction_leave = exports.interaction_play = void 0;
 const createCommand_1 = require("../models/createCommand");
 const Button_1 = require("../structure/builders/Button");
 const ActionRow_1 = require("../structure/builders/ActionRow");
@@ -11,26 +11,25 @@ const createInteraction_1 = require("../models/createInteraction");
 const Data_1 = __importDefault(require("../../managers/Data"));
 const env_1 = require("../../env");
 const Customizations_1 = require("../utils/Customizations");
-
 exports.default = (0, createCommand_1.createCommand)({
-    name: "iniciar",
-    description: "Inicia o chaveamento das partidas.",
-    type: "command",
+    name: 'iniciar',
+    description: 'Inicia o chaveamento das partidas.',
+    type: 'command',
     args: {
         emoji: {
-            name: "reação",
-            description: "Emoji para entrar no chaveamento",
+            name: 'reação',
+            description: 'Emoji para entrar no chaveamento',
             type: 3,
             required: true,
         },
     },
     run: async (ctx) => {
         const customs = (0, Customizations_1.getCustoms)(String(ctx.data.guildID));
-        if (!(env_1.enhancer.env.DEVS_ID.split(",").includes(ctx.data.user.id) ||
+        if (!(env_1.enhancer.env.DEVS_ID.split(',').includes(ctx.data.user.id) ||
             ctx.data.member?.roles.includes(String(customs.clashesManagerRoleID)))) {
             ctx.data.reply({
                 content: customs?.messages?.unauthorizedToRunDaily ||
-                    "Você não possui permissão para executar este comando!",
+                    'Você não possui permissão para executar este comando!',
                 flags: 64,
             });
             return;
@@ -39,36 +38,36 @@ exports.default = (0, createCommand_1.createCommand)({
             ? ctx.args.emoji
             : {
                 id: String(ctx.args.emoji
-                    ?.replace(/[\<,\>]/g, "")
-                    ?.split(":")[2]),
+                    ?.replace(/[\<,\>]/g, '')
+                    ?.split(':')[2]),
                 name: String(ctx.args.emoji
-                    ?.replace(/[\<,\>]/g, "")
-                    ?.split(":")[1]),
+                    ?.replace(/[\<,\>]/g, '')
+                    ?.split(':')[1]),
             };
         const embed = customs?.messages?.dailyEmbed;
         if (embed) {
             const message = await ctx.reply({
                 content: customs.clashesMentionRoleID == ctx.data.guildID
-                    ? "@everyone"
+                    ? '@everyone'
                     : `<@&${customs.clashesMentionRoleID ||
-                        "1158429525504442369"}>`,
+                        '1158429525504442369'}>`,
                 embeds: [embed],
                 components: [
                     new ActionRow_1.ActionRow()
                         .addComponent(new Button_1.Button()
-                            .setID("play")
-                            .setLabel("Entrar")
-                            .setStyle("SUCCESS")
-                            .setEmoji(emoji))
+                        .setID(`play`)
+                        .setLabel('Entrar')
+                        .setStyle('SUCCESS')
+                        .setEmoji(emoji))
                         .addComponent(new Button_1.Button()
-                            .setID("sort")
-                            .setLabel("Iniciar")
-                            .setStyle("SECONDARY")
-                            .setEmoji(customs?.messages
-                                ?.dailyEmbedStartButtonEmoji || {
-                                id: "1270083651954278492",
-                                name: "members",
-                            })),
+                        .setID(`sort`)
+                        .setLabel('Iniciar')
+                        .setStyle('SECONDARY')
+                        .setEmoji(customs?.messages
+                        ?.dailyEmbedStartButtonEmoji || {
+                        id: '1270083651954278492',
+                        name: 'members',
+                    })),
                 ],
             });
             const messageId = (await message.getMessage()).id;
@@ -80,17 +79,16 @@ exports.default = (0, createCommand_1.createCommand)({
         }
     },
 });
-
 exports.interaction_play = (0, createInteraction_1.createInteraction)({
-    type: "button",
-    name: "play",
+    type: 'button',
+    name: 'play',
     async run(ctx) {
         const customs = (0, Customizations_1.getCustoms)(String(ctx.data.guildID));
         const clash = Data_1.default.clashes.get(ctx.data.message.id);
         if (clash?.users.find((d) => d.id == ctx.data.user.id)) {
             return ctx.data.reply({
                 content: customs?.messages?.alreadySubscribed ||
-                    "Você já está inscrito neste campeonato.",
+                    'Você já está inscrito neste campeonato.',
                 flags: 64,
             });
         }
@@ -101,54 +99,53 @@ exports.interaction_play = (0, createInteraction_1.createInteraction)({
                 priority: customs.functions?.sortOrder == 1
                     ? ctx.data.member?.roles
                         .filter((roleID) => {
-                            return customs.priorities?.find((d) => d.roleId == roleID);
-                        })
+                        return customs.priorities?.find((d) => d.roleId == roleID);
+                    })
                         .map((roleID) => {
-                            return customs.priorities?.find((d) => d.roleId == roleID);
-                        })
+                        return customs.priorities?.find((d) => d.roleId == roleID);
+                    })
                         .sort((a, b) => Number(b?.priority) -
-                            Number(a?.priority))[0]?.priority || 1
+                        Number(a?.priority))[0]?.priority || 1
                     : customs.functions?.sortOrder == 2
                         ? 1
                         : clash.users.length ?? 1,
             });
             ctx.data.reply({
-                content: "Entrada confirmada. ✅",
+                content: 'Entrada confirmada. ✅',
                 flags: 64,
                 components: [
                     new ActionRow_1.ActionRow().addComponent(new Button_1.Button()
-                        .setID("leave")
-                        .setLabel("Sair")
-                        .setStyle("DANGER")
-                        .setEmoji("🚪")),
+                        .setID('leave')
+                        .setLabel('Sair')
+                        .setStyle('DANGER')
+                        .setEmoji('🚪')),
                 ],
             });
             ctx.data.editFollowup(ctx.data.message.id, {
                 components: [
                     new ActionRow_1.ActionRow()
                         .addComponent(new Button_1.Button()
-                            .setID("play")
-                            .setLabel("Entrar")
-                            .setStyle("SUCCESS")
-                            .setEmoji(clash.emoji))
+                        .setID(`play`)
+                        .setLabel('Entrar')
+                        .setStyle('SUCCESS')
+                        .setEmoji(clash.emoji))
                         .addComponent(new Button_1.Button()
-                            .setID("sort")
-                            .setLabel(`Iniciar (${clash.users.length})`)
-                            .setStyle("SECONDARY")
-                            .setEmoji(customs?.messages
-                                ?.dailyEmbedStartButtonEmoji || {
-                                id: "1270083651954278492",
-                                name: "members",
-                            })),
+                        .setID(`sort`)
+                        .setLabel(`Iniciar (${clash.users.length})`)
+                        .setStyle('SECONDARY')
+                        .setEmoji(customs?.messages
+                        ?.dailyEmbedStartButtonEmoji || {
+                        id: '1270083651954278492',
+                        name: 'members',
+                    })),
                 ],
             });
         }
     },
 });
-
 exports.interaction_leave = (0, createInteraction_1.createInteraction)({
-    type: "button",
-    name: "leave",
+    type: 'button',
+    name: 'leave',
     async run(ctx) {
         const customs = (0, Customizations_1.getCustoms)(String(ctx.data.guildID));
         const clash = Data_1.default.clashes.get(Object(ctx.data.message.interactionMetadata)?.interactedMessageID);
@@ -159,41 +156,40 @@ exports.interaction_leave = (0, createInteraction_1.createInteraction)({
                 components: [
                     new ActionRow_1.ActionRow()
                         .addComponent(new Button_1.Button()
-                            .setID("play")
-                            .setLabel("Entrar")
-                            .setStyle("SUCCESS")
-                            .setEmoji(clash.emoji))
+                        .setID(`play`)
+                        .setLabel('Entrar')
+                        .setStyle('SUCCESS')
+                        .setEmoji(clash.emoji))
                         .addComponent(new Button_1.Button()
-                            .setID("sort")
-                            .setLabel(`Iniciar${clash.users.length >= 1
-                                ? ` (${clash.users.length})`
-                                : ""}`)
-                            .setStyle("SECONDARY")
-                            .setEmoji(customs?.messages
-                                ?.dailyEmbedStartButtonEmoji || {
-                                id: "1270083651954278492",
-                                name: "members",
-                            })),
+                        .setID(`sort`)
+                        .setLabel(`Iniciar${clash.users.length >= 1
+                        ? ` (${clash.users.length})`
+                        : ''}`)
+                        .setStyle('SECONDARY')
+                        .setEmoji(customs?.messages
+                        ?.dailyEmbedStartButtonEmoji || {
+                        id: '1270083651954278492',
+                        name: 'members',
+                    })),
                 ],
             });
             ctx.data.reply({
-                content: "Você saiu do campeonato. 🚪",
+                content: 'Você saiu do campeonato. 🚪',
                 flags: 64,
             });
         }
     },
 });
-
 exports.interaction_sort = (0, createInteraction_1.createInteraction)({
-    type: "button",
-    name: "sort",
+    type: 'button',
+    name: 'sort',
     async run(ctx) {
         const customs = (0, Customizations_1.getCustoms)(String(ctx.data.guildID));
-        if (!(env_1.enhancer.env.DEVS_ID.split(",").includes(ctx.data.user.id) ||
+        if (!(env_1.enhancer.env.DEVS_ID.split(',').includes(ctx.data.user.id) ||
             ctx.data.member?.roles.includes(String(customs.clashesManagerRoleID)))) {
             ctx.data.reply({
                 content: customs?.messages?.unauthorizedToRunDaily ||
-                    "Você não possui permissão para iniciar um Diário.",
+                    'Você não possui permissão para iniciar um Diário.',
                 flags: 64,
             });
             return;
@@ -201,7 +197,7 @@ exports.interaction_sort = (0, createInteraction_1.createInteraction)({
         const clash = Data_1.default.clashes.get(ctx.data.message.id);
         if (!clash) {
             return ctx.data.reply({
-                content: "Este evento não existe mais!",
+                content: 'Este evento não existe mais!',
                 flags: 64,
             });
         }
@@ -215,76 +211,65 @@ exports.interaction_sort = (0, createInteraction_1.createInteraction)({
         let clashes = players
             .toReversed()
             .map((data, i, array) => {
-                if (indicator == i)
-                    return undefined;
-                const nextItem = array[i + 1]?.[1];
-                indicator = i + 1;
-                return data[1].id == nextItem?.id
-                    ? undefined
-                    : [data[1], nextItem];
-            })
-            .filter((data) => data != undefined);
-        const msg = await ctx.data.reply({
-            content: `${customs?.messages?.dailyStart || "Iniciando o Diário!"}`,
-            flags: 64,
-            embeds: [
-                {
-                    title: "Resultado:",
-                    fields: [
-                        {
-                            name: `🔘 ${players.map((data) => data[1].name).join(" | ")}`,
-                            value: "\u200B",
-                        },
-                    ],
-                },
-            ],
-        });
+            if (indicator == i)
+                return undefined;
+            const nextItem = array[i + 1]?.[1];
+            indicator = i + 1;
+            return data[1].id == nextItem?.id
+                ? undefined
+                : [data[1], nextItem];
+        })
+            .filter((d) => Array.isArray(d));
+        if (clashes.length < 4) {
+            return ctx.data.reply({
+                content: `Não foi possível iniciar o chaveamento \`(${clashes.length} confrontos possíveis)\`.`,
+                flags: 64,
+            });
+        }
         Data_1.default.clashes.delete(ctx.data.message.id);
-        await ctx.data.deleteMessage(msg.id);
-        for (let clash of clashes) {
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+        if (clashes.length >= 4 && clashes.length < 8) {
+            clashes = clashes.slice(0, 4);
+        }
+        else if (clashes.length >= 8 && clashes.length < 16) {
+            clashes = clashes.slice(0, 8);
+        }
+        else if (clashes.length >= 16) {
+            clashes = clashes.slice(0, 16);
+        }
+        if (customs.functions?.threads) {
+            let messageIndex = 0;
+            for (const clash of clashes) {
+                messageIndex += 1;
+                const message = await ctx.data.client.rest.channels.createMessage(ctx.data.message.channelID, {
+                    content: `## Confronto \`#${messageIndex < 10 ? `0${messageIndex}` : 0}\`\n<@${clash[0]?.id}> ***X*** <@${clash[1]?.id}>`,
+                });
+                message.startThread({
+                    name: `confronto-#${messageIndex < 10 ? `0${messageIndex}` : messageIndex}`,
+                    autoArchiveDuration: 60,
+                });
+            }
+        }
+        else {
             await ctx.data.reply({
-                content: `💥 ${clash[0].name} Vs ${clash[1].name}`,
-                flags: 64,
-                embeds: [],
+                content: clashes
+                    .map((data, index) => {
+                    return `## Confronto \`#${index + 1 < 10 ? `0${index + 1}` : index + 1}\`\n<@${data[0]?.id}> ***X*** <@${data[1]?.id}>`;
+                })
+                    .join('\n'),
             });
         }
-        await ctx.data.reply({
-            content: `🎉 ${players.map((data) => data[1].name).join(" | ")}`,
-            flags: 64,
-            embeds: [],
-        });
-    },
-});
-
-// Novo comando para ranking
-exports.interaction_ranking = (0, createInteraction_1.createInteraction)({
-    type: "command",
-    name: "ranking",
-    description: "Mostra o ranking dos vencedores.",
-    async run(ctx) {
-        const customs = (0, Customizations_1.getCustoms)(String(ctx.data.guildID));
-        const rankingData = await ctx.data.getRankingData(); // Método fictício para obter dados do ranking
-
-        if (!rankingData || rankingData.length === 0) {
-            ctx.data.reply({
-                content: customs?.messages?.noRanking || "Nenhum dado de ranking disponível.",
-                flags: 64,
-            });
-            return;
-        }
-
-        const rankingEmbed = {
-            title: "Ranking dos Vencedores",
-            fields: rankingData.map((data, index) => ({
-                name: `${index + 1}. ${data.winner}`,
-                value: `Pontos: ${data.points} | Organizador: ${data.organizer}`,
-            })),
-        };
-
-        ctx.data.reply({
-            embeds: [rankingEmbed],
-            flags: 64,
+        ;
+        (await ctx.data.client.rest.channels.getMessage(ctx.data.message.channelID, ctx.data.message.id)).edit({
+            components: [
+                new ActionRow_1.ActionRow().addComponent(new Button_1.Button()
+                    .setID(`sort`)
+                    .setLabel(`Finalizado! (${clash.users.length})`)
+                    .setStyle('SECONDARY')
+                    .setEmoji(customs?.messages?.dailyEmbedStartButtonEmoji || {
+                    id: '1270083651954278492',
+                    name: 'members',
+                })),
+            ],
         });
     },
 });
